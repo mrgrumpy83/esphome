@@ -1,0 +1,86 @@
+esphome:
+  name: garagecontrol
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "mrgrumpy"
+  password: "grumpywl4n"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+#  ap:
+#    ssid: "Garagecontrol Fallback Hotspot"
+#    password: "wyBRxKBVmpfe"
+
+#captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "88L*CjHS@f2m"
+
+ota:
+  password: "88L*CjHS@f2m"
+
+web_server:
+  port: 80
+
+binary_sensor:
+- platform: gpio
+  id: doorsensor
+  #internal: true
+  pin:
+    number: GPIO13
+    mode: INPUT_PULLUP
+    inverted: False
+  name: "Garage Door Sensor"
+  device_class: garage_door
+  filters:
+    - delayed_on: 1000ms
+    - delayed_off: 1000ms
+
+switch:
+- platform: gpio
+  id: garage_door_relay
+  #internal: true
+  pin:
+    number: GPIO5
+    inverted: False
+  restore_mode: ALWAYS_OFF
+- platform: template
+  name: "Garage Door Switch"
+  icon: "mdi:garage"
+  turn_on_action:
+  - switch.turn_on: garage_door_relay
+  - delay: 1s
+  - switch.turn_off: garage_door_relay
+- platform: restart
+  name: 'Garage Door REBOOT'
+
+cover:
+  - platform: template
+    device_class: garage
+    name: "Garage Door"
+    id: garage_door_cover
+    lambda: |-
+      if (id(doorsensor).state) {
+        return COVER_OPEN;
+      } else {
+        return COVER_CLOSED;
+      }
+    open_action:
+      - lambda: !lambda |-
+          if (id(garage_door_cover).position == COVER_CLOSED) {
+            id(garage_door_relay).turn_on();
+            delay(1000);
+            id(garage_door_relay).turn_off();
+          }
+    close_action:
+      - lambda: !lambda |-
+          if (id(garage_door_cover).position == COVER_OPEN) {
+            id(garage_door_relay).turn_on();
+            delay(1000);
+            id(garage_door_relay).turn_off();
+          }
