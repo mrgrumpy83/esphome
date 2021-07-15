@@ -26,6 +26,14 @@ ota:
 
 web_server:
   port: 80
+  
+sensor:
+- platform: wifi_signal
+  name: "Garage Door Opener Wifi"
+  update_interval: 60s
+  icon: mdi:wifi
+- platform: uptime
+  name: "Garage Door Opener Uptime"
 
 binary_sensor:
 - platform: gpio
@@ -35,8 +43,10 @@ binary_sensor:
     number: GPIO13
     mode: INPUT_PULLUP
     inverted: False
-  name: "Garage Door Sensor"
+  name: "Garage Door State"
   device_class: garage_door
+  on_state:
+    - switch.turn_off: garage_door_lock
   filters:
     - delayed_on: 1000ms
     - delayed_off: 1000ms
@@ -52,12 +62,47 @@ switch:
 - platform: template
   name: "Garage Door Switch"
   icon: "mdi:garage"
+  id: garage_door_switch
   turn_on_action:
   - switch.turn_on: garage_door_relay
   - delay: 1s
   - switch.turn_off: garage_door_relay
 - platform: restart
-  name: 'Garage Door REBOOT'
+  name: "Garage Door REBOOT"
+- platform: template
+  id: garage_door_lock
+  name: "Garage Door Lock"
+  icon: "mdi:lock"
+  #optimistic: true
+  turn_on_action:
+    then: 
+      - if:
+          condition:
+            binary_sensor.is_off: doorsensor
+          then:
+            - switch.template.publish:
+                id: garage_door_lock
+                state: ON
+            - logger.log: "Door is closed. Door is now locked!"
+      - if:
+          condition: 
+            binary_sensor.is_on: doorsensor
+          then:
+            - logger.log: "Door is open - closing it before locking!"
+            - cover.close: garage_door_cover
+            - wait_until:
+                binary_sensor.is_off: doorsensor
+            - logger.log: "Door is now closed."
+            - switch.template.publish:
+                id: garage_door_lock
+                state: ON
+            - logger.log: "Door is now locked!"
+  turn_off_action:
+    - switch.template.publish:
+        id: garage_door_lock
+        state: OFF
+    - logger.log: "Door Unlocked!"
+
 
 cover:
   - platform: template
@@ -71,12 +116,21 @@ cover:
         return COVER_CLOSED;
       }
     open_action:
-      - lambda: !lambda |-
-          if (id(garage_door_cover).position == COVER_CLOSED) {
-            id(garage_door_relay).turn_on();
-            delay(1000);
-            id(garage_door_relay).turn_off();
-          }
+      then:
+        - if: 
+            condition: 
+              and:
+                - binary_sensor.is_off: doorsensor
+                - switch.is_off: garage_door_lock
+            then:
+              - switch.turn_on: garage_door_switch
+              - logger.log: "Door is closed and locked. Won't open."
+      #- lambda: !lambda |-
+      #    if (id(garage_door_cover).position == COVER_CLOSED && id(garage_door_lock).state == 0)  {
+      #      id(garage_door_relay).turn_on();
+      #      delay(1000);
+      #      id(garage_door_relay).turn_off();
+      #    }
     close_action:
       - lambda: !lambda |-
           if (id(garage_door_cover).position == COVER_OPEN) {
