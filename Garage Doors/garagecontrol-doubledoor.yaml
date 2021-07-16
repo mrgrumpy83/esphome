@@ -1,0 +1,148 @@
+esphome:
+  name: garage-door
+  platform: ESP8266
+  board: d1_mini
+  
+wifi:
+  ssid: "things"
+  password: "thingsthings123"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+#  ap:
+#    ssid: "Garagecontrol Fallback Hotspot"
+#    password: "wyBRxKBVmpfe"
+
+#captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "88L*CjHS@f2m"
+
+ota:
+  password: "88L*CjHS@f2m"
+
+web_server:
+  port: 80
+  
+sensor:
+- platform: wifi_signal
+  name: "Garage Door Opener Wifi"
+  update_interval: 60s
+  icon: mdi:wifi
+- platform: uptime
+  name: "Garage Door Opener Uptime"
+
+switch:
+#Car Door relay output
+- platform: gpio
+  id: garage_door_relay_car
+  #internal: true
+  pin:
+    number: GPIO5
+    inverted: False
+  restore_mode: ALWAYS_OFF
+
+#Bike Door relay output
+- platform: gpio
+  id: garage_door_relay_bike
+  #internal: true
+  pin:
+    number: GPIO4
+    inverted: False
+  restore_mode: ALWAYS_OFF
+
+#Switch to toggle Car Door
+- platform: template
+  name: "Car Door Switch"
+  icon: "mdi:garage"
+  id: garage_door_car
+  turn_on_action:
+  - switch.turn_on: garage_door_relay_car
+  - delay: 1s
+  - switch.turn_off: garage_door_relay_car
+
+#Switch to toggle Bike Door
+- platform: template
+  name: "Bike Door Switch"
+  icon: "mdi:garage"
+  id: garage_door_bike
+  turn_on_action:
+  - switch.turn_on: garage_door_relay_bike
+  - delay: 1s
+  - switch.turn_off: garage_door_relay_bike
+ 
+#Switch to toggle reboot 
+- platform: restart
+  name: "Garage Door REBOOT"
+  
+#- platform: template
+#  id: garage_door_lock
+#  name: "Garage Door Lock"
+#  icon: "mdi:lock"
+#  #optimistic: true
+#  turn_on_action:
+#    then: 
+#      - if:
+#          condition:
+#            binary_sensor.is_off: doorsensor
+#          then:
+#            - switch.template.publish:
+#                id: garage_door_lock
+#                state: ON
+#            - logger.log: "Door is closed. Door is now locked!"
+#      - if:
+#          condition: 
+#            binary_sensor.is_on: doorsensor
+#          then:
+#            - logger.log: "Door is open - closing it before locking!"
+#            - cover.close: garage_door_cover
+#            - wait_until:
+#                binary_sensor.is_off: doorsensor
+#            - logger.log: "Door is now closed."
+#            - switch.template.publish:
+#                id: garage_door_lock
+#                state: ON
+#            - logger.log: "Door is now locked!"
+#  turn_off_action:
+#    - switch.template.publish:
+#        id: garage_door_lock
+#        state: OFF
+#    - logger.log: "Door Unlocked!"
+
+#cover:
+#  - platform: template
+#    device_class: garage
+#    name: "Garage Door"
+#    id: garage_door_cover
+#    lambda: |-
+#      if (id(doorsensor).state) {
+#        return COVER_OPEN;
+#      } else {
+#        return COVER_CLOSED;
+#      }
+#    open_action:
+#      then:
+#        - if: 
+#            condition: 
+#              and:
+#                - binary_sensor.is_off: doorsensor
+#                - switch.is_off: garage_door_lock
+#            then:
+#              - switch.turn_on: garage_door_switch
+#              - logger.log: "Door is closed and locked. Won't open."
+#      #- lambda: !lambda |-
+#      #    if (id(garage_door_cover).position == COVER_CLOSED && id(garage_door_lock).state == 0)  {
+#      #      id(garage_door_relay).turn_on();
+#      #      delay(1000);
+#      #      id(garage_door_relay).turn_off();
+#      #    }
+#    close_action:
+#      - lambda: !lambda |-
+#          if (id(garage_door_cover).position == COVER_OPEN) {
+#            id(garage_door_relay).turn_on();
+#            delay(1000);
+#            id(garage_door_relay).turn_off();
+#          }
