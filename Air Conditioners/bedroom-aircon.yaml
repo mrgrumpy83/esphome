@@ -1,0 +1,108 @@
+esphome:
+  name: bedroom-aircon
+
+esp32:
+  board: firebeetle32
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "c60ef137d3779c9803737b0355caa179"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bedroom-Aircon Fallback Hotspot"
+    password: "qJ58GAY06Fbo"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+sensor:
+  - platform: dht
+    # Orange Wire
+    pin: GPIO26
+    model: dht11
+    temperature:
+      name: "Bedroom Temperature"
+      id: brmtemp
+    humidity:
+      name: "Bedroom Humidity"
+      id: brmhum
+    update_interval: 60s
+  #- platform: wifi_signal
+    #name: "Bedroom AC Controller Wifi"
+    #update_interval: 60s
+    #icon: mdi:wifi
+  #- platform: uptime
+    #name: "Bedroom AC Controller Uptime Seconds"
+    #id: uptime_sensor
+    #on_raw_value:
+        #then:
+          #- text_sensor.template.publish:
+              #id: uptime_human
+              #state: !lambda |-
+                #int seconds = round(id(uptime_sensor).raw_state);
+                #int days = seconds / (24 * 3600);
+                #seconds = seconds % (24 * 3600);
+                #int hours = seconds / 3600;
+                #seconds = seconds % 3600;
+                #int minutes = seconds /  60;
+                #seconds = seconds % 60;
+                #return (
+                  #(days ? String(days) + "d " : "") +
+                  #(hours ? String(hours) + "h " : "") +
+                  #(minutes ? String(minutes) + "m " : "") +
+                  #(String(seconds) + "s")
+                #).c_str();
+
+
+remote_transmitter: 
+  # Green Wire
+  pin: GPIO27
+  carrier_duty_percent: 50%
+  
+climate:
+  - platform: heatpumpir
+    name: "Bedrooom AC"
+    sensor: brmtemp
+    protocol: mitsubishi_heavy_zmp
+    horizontal_default: mleft
+    vertical_default: up
+    max_temperature: 28
+    min_temperature: 16
+    visual:
+        min_temperature: 16 °C
+        max_temperature: 28 °C
+        temperature_step: 1 °C
+        
+        
+#esp32_ble_tracker:
+
+#binary_sensor:
+  # Presence based on MAC address
+  #- platform: ble_presence
+    #mac_address: A0:38:F8:12:CC:DA
+    #name: "Tom's Oura"
+        
+#text_sensor:
+  #- platform: template
+    #name: "Bedroom AC Controller Uptime"
+    #id: uptime_human
+    #icon: mdi:clock-start
+
+switch:
+#Switch to toggle reboot 
+- platform: restart
+  name: "Bedroom AC REBOOT"
