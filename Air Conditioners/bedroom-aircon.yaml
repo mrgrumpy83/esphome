@@ -11,6 +11,10 @@ logger:
 
 # Enable Home Assistant API
 api:
+  password: !secret bedroom_ac_api_password
+  encryption:
+    key: !secret bedroom_ac_api_key
+  
 
 ota:
   password: !secret bedroom_ac_ota_password
