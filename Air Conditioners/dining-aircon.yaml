@@ -11,6 +11,9 @@ logger:
 
 # Enable Home Assistant API
 api:
+password: !secret dining_ac_api_password
+  encryption:
+    key: !secret dining_ac_api_key
 
 ota:
   password: !secret dining_ac_ota_password
