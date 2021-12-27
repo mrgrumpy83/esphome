@@ -13,7 +13,7 @@ logger:
 api:
 
 ota:
-  password: "6465cdd107c93ffab6626b87a5a81092"
+  password: !secret dining_ac_ota_password
 
 wifi:
   ssid: !secret wifi_ssid
@@ -22,7 +22,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Dining-Aircon Fallback Hotspot"
-    password: "fWRN82KR44QJ"
+    password: !secret dining_ac_fallback_hotspot_password
 
 captive_portal:
 
@@ -41,31 +41,31 @@ sensor:
       name: "Dining Room Humidity"
       id: drmhum
     update_interval: 60s
-  #- platform: wifi_signal
-    #name: "Dining Room AC Controller Wifi"
-    #update_interval: 60s
-    #icon: mdi:wifi
-  #- platform: uptime
-    #name: "Dining Room AC Controller Uptime Seconds"
-    #id: uptime_sensor
-    #on_raw_value:
-        #then:
-          #- text_sensor.template.publish:
-              #id: uptime_human
-              #state: !lambda |-
-                #int seconds = round(id(uptime_sensor).raw_state);
-                #int days = seconds / (24 * 3600);
-                #seconds = seconds % (24 * 3600);
-                #int hours = seconds / 3600;
-                #seconds = seconds % 3600;
-                #int minutes = seconds /  60;
-                #seconds = seconds % 60;
-                #return (
-                  #(days ? String(days) + "d " : "") +
-                  #(hours ? String(hours) + "h " : "") +
-                  #(minutes ? String(minutes) + "m " : "") +
-                  #(String(seconds) + "s")
-                #).c_str();
+  - platform: wifi_signal
+    name: "Dining Room AC Controller Wifi"
+    update_interval: 60s
+    icon: mdi:wifi
+  - platform: uptime
+    name: "Dining Room AC Controller Uptime Seconds"
+    id: uptime_sensor
+    on_raw_value:
+        then:
+          - text_sensor.template.publish:
+              id: uptime_human
+              state: !lambda |-
+                int seconds = round(id(uptime_sensor).raw_state);
+                int days = seconds / (24 * 3600);
+                seconds = seconds % (24 * 3600);
+                int hours = seconds / 3600;
+                seconds = seconds % 3600;
+                int minutes = seconds /  60;
+                seconds = seconds % 60;
+                return (
+                  (days ? String(days) + "d " : "") +
+                  (hours ? String(hours) + "h " : "") +
+                  (minutes ? String(minutes) + "m " : "") +
+                  (String(seconds) + "s")
+                ).c_str();
 
 
 remote_transmitter: 
@@ -88,19 +88,19 @@ climate:
         temperature_step: 1 °C
         
         
-#esp32_ble_tracker:
+esp32_ble_tracker:
 
-#binary_sensor:
-  # Presence based on MAC address
-  #- platform: ble_presence
-    #mac_address: A0:38:F8:12:CC:DA
-    #name: "Tom's Oura"
+binary_sensor:
+   Presence based on MAC address
+  - platform: ble_presence
+    mac_address: A0:38:F8:12:CC:DA
+    name: "Tom's Oura"
         
-#text_sensor:
-  #- platform: template
-    #name: Dining Room AC Controller Uptime"
-    #id: uptime_human
-    #icon: mdi:clock-start
+text_sensor:
+  - platform: template
+    name: Dining Room AC Controller Uptime"
+    id: uptime_human
+    icon: mdi:clock-start
 
 switch:
 #Switch to toggle reboot 
