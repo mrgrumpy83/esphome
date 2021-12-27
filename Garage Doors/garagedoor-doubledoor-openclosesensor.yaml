@@ -10,7 +10,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   #ap:
     #ssid: "fallback"
-    #password: "wyBRxKBVmpfe"
+    #password: !secret garage_fallback_hotspot_password
 
 #captive_portal:
 
@@ -19,12 +19,12 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: "88L*CjHS@f2m"
+  password: !secret garage_api_password
   encryption: 
-    key: "bwOlz9/K6wFhhq9D9t/JHtZ+CERh7fqA509K44wlhAI="
+    key: !secret garage_api_key
 
 ota:
-  password: "88L*CjHS@f2m"
+  password: !secret garage_ota_password
 
 web_server:
   port: 80
