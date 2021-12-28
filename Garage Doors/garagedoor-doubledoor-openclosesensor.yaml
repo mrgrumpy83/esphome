@@ -61,6 +61,14 @@ sensor:
                 (minutes ? String(minutes) + "m " : "") +
                 (String(seconds) + "s")
               ).c_str();
+              
+- platform: dht
+  pin: D6
+  temperature:
+    name: "Garage Temperature"
+  humidity:
+    name: "Garage Humidity"
+  update_interval: 60s
 
 # Door open/close sensors
 binary_sensor:
