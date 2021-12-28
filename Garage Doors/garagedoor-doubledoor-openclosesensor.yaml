@@ -63,7 +63,7 @@ sensor:
               ).c_str();
               
 - platform: dht
-  pin: D6
+  pin: D5
   temperature:
     name: "Garage Temperature"
   humidity:
@@ -76,7 +76,7 @@ binary_sensor:
 - platform: gpio
   id: cardoorsensor
   pin:
-    number: D7
+    number: D6
     mode: INPUT_PULLUP
     inverted: False
   name: "Car Door State"
@@ -91,7 +91,7 @@ binary_sensor:
 - platform: gpio
   id: bikedoorsensor
   pin:
-    number: D8
+    number: D7
     mode: INPUT_PULLUP
     inverted: False
   name: "Bike Door State"
@@ -171,7 +171,7 @@ switch:
 cover:
   - platform: template
     device_class: garage
-    assumed_state: true
+    # assumed_state: true
     name: "Car Door"
     id: car_door_cover
     lambda: |-
@@ -210,7 +210,7 @@ cover:
 # Bike Door            
   - platform: template
     device_class: garage
-    assumed_state: true
+    # assumed_state: true
     name: "Bike Door"
     id: bike_door_cover
     lambda: |-
