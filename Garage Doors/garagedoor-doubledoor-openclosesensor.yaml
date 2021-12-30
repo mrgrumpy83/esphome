@@ -75,6 +75,7 @@ binary_sensor:
 # Car Door Sensor
 - platform: gpio
   id: cardoorsensor
+  internal: true
   pin:
     number: D6
     mode: INPUT_PULLUP
@@ -90,6 +91,7 @@ binary_sensor:
 # Bike Door Sensor
 - platform: gpio
   id: bikedoorsensor
+  internal: true
   pin:
     number: D7
     mode: INPUT_PULLUP
@@ -106,7 +108,7 @@ switch:
 #Car Door relay output
 - platform: gpio
   id: car_door_switch
-  #internal: true
+  internal: true
   pin:
     number: D1
     inverted: True
@@ -115,7 +117,7 @@ switch:
 #Bike Door relay output
 - platform: gpio
   id: bike_door_switch
-  #internal: true
+  internal: true
   pin:
     number: D2
     inverted: True
@@ -123,6 +125,7 @@ switch:
  
 #Switch to toggle reboot 
 - platform: restart
+  internal: true
   name: "Garage Door REBOOT"
   
 - platform: template
